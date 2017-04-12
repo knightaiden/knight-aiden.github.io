@@ -1,11 +1,10 @@
 # Site settings
-title: Welcome to my bolg, this is a no social developer
+title: Aiden's Blog
 header-img: img/home-bg.jpg
 email: aiden_zhang2012@163.com
-copyright_name: Your/Project/Corporate Name
 description: "I am a Senior Software Engineering at the <a href='http://www.iqiyi.com'>iQiyi.com</a>, Graduated from Beijing University of Technology. Forcus on backend development. This is a blog about software, knowledge sharing and bloger's boring life. Not necessarily in that order. "
 baseurl: ""
-url: "http://yourdomain.com"
+url: "http://knightaiden.github.io"
 github_username:  knightaiden
 facebook_username:  张哲
 email_username:  aiden_zhang2012@163.com
