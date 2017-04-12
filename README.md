@@ -1,24 +1,24 @@
-# Papyrus - Jekyll Theme
+#Clean Blog by Start Bootstrap - Jekyll Version
 
-Papyrus is a responsive three-column Jekyll theme with classic styling and careful typographic details.
+The official Jekyll version of the Clean Blog theme by [Start Bootstrap](http://startbootstrap.com/).
 
-Loosely based on the [Onelight Atom Theme](https://github.com/atom/one-light-ui).
+###[View Live Demo &rarr;](http://blackrockdigital.github.io/startbootstrap-clean-blog-jekyll/)
 
-## Install and Test
+## Before You Begin
 
-1. Download or clone the repo
-  - `git clone git@github.com:hugoferreira/papyrus-theme.git`
-2. Enter the folder
-  - `cd papyrus-theme/`
-3. Start Jekyll server
-  - `jekyll serve --watch`
-4. Access via
-  - http://127.0.0.1:4000/papyrus-theme/
+In the _config.yml file, the base URL is set to /startbootstrap-clean-blog-jekyll which is this themes gh-pages preview. It's recommended that you remove the base URL before working with this theme locally!
 
-## Demo
+It should look like this:
+`baseurl: ""`
 
-- http://hugosereno.eu
+## What's Included
 
-## Preview
+A full Jekyll environment is included with this theme. If you have Jekyll installed, simply run `jekyll serve` in your command line and preview the build in your browser. You can use `jekyll serve --watch` to watch for changes in the source files as well.
 
-![Theme preview](/assets/screenshot.png)
+A Grunt environment is also included. There are a number of tasks it performs like minification of the JavaScript, compiling of the LESS files, adding banners to apply the MIT license, and watching for changes. Run the grunt default task by entering `grunt` into your command line which will build the files. You can use `grunt watch` if you are working on the JavaScript or the LESS.
+
+You can run `jekyll serve --watch` and `grunt watch` at the same time to watch for changes and then build them all at once.
+
+## Support
+
+Visit Clean Blog's template overview page on Start Bootstrap at http://startbootstrap.com/template-overviews/clean-blog/ and leave a comment, email feedback@startbootstrap.com, or open an issue here on GitHub for support.

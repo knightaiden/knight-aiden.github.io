@@ -1,17 +1,24 @@
 # Site settings
-title: "Welcome to my bolg, this is a no social developer"
-author: "Aiden Zhang"
-description: "This is a blog about software, knowledge sharing and bloger's boring life. Not necessarily in that order."
-biography: "I am a Senior Software Engineering at the <a href='http://www.iqiyi.com'>iQiyi.com</a>, Graduated from Beijing University of Technology. Forcus on backend development"
-colophon: "© MMXIII — MMXVI by Hugo Sereno Ferreira.<br>Content available under <a href='http://creativecommons.org/licenses/by-nc-sa/4.0/'>Creative Commons (BY-NC-SA)</a> unless otherwise noted.<br>This site is hosted at <a href='https://pages.github.com/'>Github Pages</a> and created with <a href='http://jekyllrb.com/'>Jekyll</a>."
-
+title: Welcome to my bolg, this is a no social developer
+header-img: img/home-bg.jpg
+email: aiden_zhang2012@163.com
+copyright_name: Your/Project/Corporate Name
+description: "I am a Senior Software Engineering at the <a href='http://www.iqiyi.com'>iQiyi.com</a>, Graduated from Beijing University of Technology. Forcus on backend development. This is a blog about software, knowledge sharing and bloger's boring life. Not necessarily in that order. "
 baseurl: ""
-url: "http://hugosereno.eu"
+url: "http://yourdomain.com"
+github_username:  knightaiden
+facebook_username:  张哲
+email_username:  aiden_zhang2012@163.com
 
-github_username: knightaiden
-linkedin_username: 张哲 (Aiden)
+# Google Analytics
+# To enable google analytics, uncomment below line with a valid Google Tracking ID
+# google_tracking_id:
 
-simple_search: http://google.com/search
+# Build settings
 markdown: kramdown
 highlighter: rouge
-permalink: /blog/:year/:month/:day/:title/
+permalink: pretty
+paginate: 5
+exclude: ["less","node_modules","Gruntfile.js","package.json","README.md"]
+
+gems: [jekyll-paginate, jekyll-feed]
