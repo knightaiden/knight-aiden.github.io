@@ -1,1 +1,17 @@
-theme: jekyll-theme-hacker
+# Site settings
+title: "Welcome to my bolg, this is a no social developer"
+author: "Aiden Zhang"
+description: "This is a blog about software, knowledge sharing and bloger's boring life. Not necessarily in that order."
+biography: "I am a Senior Software Engineering at the <a href='http://www.iqiyi.com'>iQiyi.com</a>, Graduated from Beijing University of Technology. Forcus on backend development"
+colophon: "© MMXIII — MMXVI by Hugo Sereno Ferreira.<br>Content available under <a href='http://creativecommons.org/licenses/by-nc-sa/4.0/'>Creative Commons (BY-NC-SA)</a> unless otherwise noted.<br>This site is hosted at <a href='https://pages.github.com/'>Github Pages</a> and created with <a href='http://jekyllrb.com/'>Jekyll</a>."
+
+baseurl: ""
+url: "http://hugosereno.eu"
+
+github_username: knightaiden
+linkedin_username: 张哲 (Aiden)
+
+simple_search: http://google.com/search
+markdown: kramdown
+highlighter: rouge
+permalink: /blog/:year/:month/:day/:title/
