@@ -159,4 +159,50 @@ public synchronized void unlock() throws RuntimeException {
 ```
 
 
-好了，到此为止，主要的锁流程就完成了，如果你想看清流程，建议直接运行单元测试中的SimpleWriteLockTest.java，在方法入口打好断点，全流程清晰明了～
+好了，到此为止，主要的锁流程就完成了，如果你想看清流程，建议直接运行单元测试中的SimpleWriteLockTest.java，在方法入口打好断点，全流程清晰明了～  
+然鹅！尽管这个实现看上去很令人满意，但是依然很多人吐槽直接使用zk原生的这个客户端非常麻烦，而且还有各种各样的小问题，如果用到自己项目中，还需要修改很多地方，所以这个时候Curator应运而生，他最大限度的封装了zk的使用流程以及实现了各种zk所需的components非常强大，即便如此，我们不得不说，zookeeper原版的recipes的代码依然用最简明的方式说明了分布式锁的实现原理。  
+
+### Curator 分布式锁
+> Curator是在线影业租赁届的大佬Netflix公司开源的产品，又一个Apache顶级项目，Curator的抽象层次更高，简化了Zookeeper客户端的开发量。 并且实现了分布式锁，消息队列(然而并不推荐使用)，监听器，并且在微服务架构中是服务的注册发现的首选工具，博主写这篇博客的时候，也在一家视频公司搬砖，而我们组所使用的zk客户端和服务注册发现，正是用的Curator
+
+博主依然在github的项目中编写了一套Curator测试代码，详见[代码仓库（直接点击）](https://github.com/knightaiden/HadoopSimulator)，在此要感谢另一位博主所写的文章，[这篇文章（直接点击）](http://www.cnblogs.com/LiZhiW/p/4931577.html)实现了目前能想到的所有分布式锁的实现，并且代码简单明了，给了我很大的启发,我也在此对他的文章进行一些扩充，详细的说明下Curator中的api
+- CuratorFramework Curator的zk客户端，并且使用Fluent风格创建客户端(以及其他的操作)，把创建和启动过程分离，示例代码如下
+
+```java
+CuratorFramework client = CuratorFrameworkFactory.newClient("127.0.0.1:2181", new ExponentialBackoffRetry(1000, 3));
+client.start();
+```
+
+- 重试策略  
+  - ExponentialBackoffRetry:重试指定的次数, 且每一次重试之间停顿的时间逐渐增加.
+  - RetryNTimes:指定最大重试次数的重试策略
+  - RetryOneTime:仅重试一次
+  - RetryUntilElapsed:一直重试直到达到规定的时间
+
+- 监听器
+  - PathChildrenCacheListener 注册监听某个路径下节点和子节点的的更改，对应PathChildrenCache
+  - NodeCacheListener 监听某个节点的更改，NodeCache会本地缓存该节点，对应NodeCache
+  - TreeCacheListener 上面两种监听器的结合，对应TreeCache
+
+- InterProcessMutex Curator“菜单”的主菜，分布式锁的基本实现  
+  通过 acquire() 和 release()方法来控制锁
+
+- InterProcessMultiLock 多锁对象的实现类
+
+除此之外还有很多很多，暂时不一一赘述，通过阅读我们可以发现，Curator真的实现类很多很多功能，如果你的项目需要使用，直接引入如下maven包
+```xml
+<dependency>
+    <groupId>org.apache.curator</groupId>
+    <artifactId>curator-recipes</artifactId>
+    <version>2.7.1</version>
+</dependency>
+```
+
+具体实现可参见代码仓库中的代码
+- [github 仓库地址，点击即可](https://github.com/knightaiden/HadoopSimulator)
+- module : ZookeeperSimulator
+- package : org.aiden.lab.sample.hadoop.zookeeper.sample
+- class : CuratorLockTestTask
+
+## 结语
+洋洋洒洒又写了一大堆，其实zk以及curator可以实现的功能还有很多，原本想在一篇博客中尽量多的去介绍zk以及curator的方方面面，写到这里才发现完全不可能，只好附上一句"详细的api文档可以直接查询官方说明",但是分布式锁其实是zk使用非常广泛的一个功能，在下也会在未来的日子里把sample写的更加完善，希望能够帮助到你～
