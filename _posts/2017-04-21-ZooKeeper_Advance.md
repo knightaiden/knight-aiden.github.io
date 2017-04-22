@@ -43,6 +43,7 @@ if (id == null) {
     idName = new ZNodeName(id);
 }
 ```
+
 2. 在方法中如果存在子节点，那么走for循环，假如子节点的名称符合锁节点前缀规则，那么将当前的id设置成已存在的该节点的名称，之后的流程在来判断这个节点是否会阻止当前进程得到锁。当为找到子节点的情况下，id依然为空，进入if代码块，使用前缀名称来创建一个EPHEMERAL_SEQUENTIAL递增序号的节点，而这个节点就是锁节点，id为当前创建节点的名称
 ```java
 private void findPrefixInChildren(String prefix, ZooKeeper zookeeper, String dir)
@@ -66,6 +67,7 @@ private void findPrefixInChildren(String prefix, ZooKeeper zookeeper, String dir
     }
 }
 ```
+
 3. 获取到id后(当前新建的节点id或者已存在节点id)同样再次获取锁路径所有的子节点，并将节点的名称存在一个SortedSet中，用于排序；然后从SortedSet中取到最小节点名称，设置成ownerId(拥有锁的id)，紧接着我们可以看到lessThanMe这个新的SortedSet中尝试获取当前idName的前一个节点，这里我们看到这个if-else便是如果lessThanMe是非空的，那么说明当前节点前还有未删除的锁节点，如果是空的，那么走else，再次判断当前节点idName是否是锁的拥有者ownerId(isOwner()方法)，如果确定还是owner，则判断可以获取到锁。
 ```java
 if (id != null) {
@@ -93,6 +95,7 @@ if (id != null) {
     }
 }
 ```
+
 4. 接3.中的内容，还是看lessThanMe，假如这个SortedSet中存在比当前节点还小的未被删除的锁节点，那么说明这个锁还被占用，lastChildName 获取lessThanMe 中的最后一个判断这个节点是否还存在，如果确定还存在，直接告知，无法获取到锁，如果没有状态信息，继续下一轮判断
 ```java
 if (!lessThanMe.isEmpty()) {
@@ -110,6 +113,7 @@ if (!lessThanMe.isEmpty()) {
     }
 }
 ```
+
 5. 之后就是unlock的代码，原理就很简单了，直接删除当前锁节点
 ```java
 public synchronized void unlock() throws RuntimeException {
@@ -148,5 +152,6 @@ public synchronized void unlock() throws RuntimeException {
     }
 }
 ```
+
 
 好了，到此为止，主要的锁流程就完成了，如果你想看清流程，建议直接运行单元测试中的SimpleWriteLockTest.java，在方法入口打好断点，全流程清晰明了～
