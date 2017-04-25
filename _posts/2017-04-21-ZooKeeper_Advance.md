@@ -2,15 +2,14 @@
 layout: post
 title: 上手Hadoop-Zookeeper实战篇
 date: 2017-04-22 22:00
-comments: true
-external-url:
 categories: Tech-Hadoop
+tags: hadoop, zookeeper, backend
 ---
 
-> 最近由于公司项目需要使用Hadoop相关的内容，于是作为一个后台的Java开发人员，决定开一个Hadoop的坑，说起来还真是个有趣的设定。。。  
-> Hadoop作为一个老牌的大数据工具，包含了大数据分析处理的方方面面，尽管不得不说随着技术的发展，越来越多的新技术层出不穷，Hadoop作为一个一名长者，被无数人崇敬着，使用者，吐槽着，放弃着，然而在互联网技术横行的如今，这位长者依然在很多企业的很多系统中扮演者至关重要的作用，在下作为一个后台系统的开发人员，只能说对整套体系略知皮毛，借着写博客的契机，总结学习，同时也站在一个非大数据开发人员的角度去分享我自己的一些体会，如有勘误或是任何写的不好的地方，还请各位发邮件给我进行交流。  
-
 上一篇博客大致介绍了下怎么在本地部署，这一篇文章，我会举一个最常见的栗子来说明下Zookeeper的实际用法，那就是分布式锁，也借这个topic大致介绍下Curator的用法，希望能帮助到你。
+
+
+
 
 ## 分布式锁
 ### Zookeeper原生分布式锁
@@ -32,7 +31,7 @@ categories: Tech-Hadoop
     - ZooKeeperOperation.java Zookeeper操作接口，用于定制Zk的实际操作
 
   我们来实际看一下WriteLock里面的流程，这里面实现了lock和unlock方法，其中lock中加锁的主要动作在内部类LockZooKeeperOperation(implements ZooKeeperOperation)中的execute方法，下面我们来详细说明一下这一段代码  
-  
+
 1.首先execute()方法一进来这个判断，获取idName,其中主要方法是findPrefixInChildren  
 
 ```java

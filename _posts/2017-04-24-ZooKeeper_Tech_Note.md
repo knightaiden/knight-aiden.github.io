@@ -1,0 +1,25 @@
+---
+layout: post
+title: 上手Hadoop-Zookeeper技术内幕篇
+date: 2017-04-24 16:34
+categories: Tech-Hadoop
+tags: hadoop, zookeeper, backend
+---
+
+之前的两篇文章已经大致的介绍来ZooKeeper从搭建开发环境到上手写代码的一些知识，相信读过之前的介绍，各位看官对ZooKeeper已经有了一定的认识，在下也在最近这几天会完善之前的文章，并且将代码做一定的更新，更全面的写一些demo以及应用场景来分享给各位，当然，如果有时间，也确实应该把英文版写了……毕竟是自己挖的坑。
+
+
+
+
+### ZooKeeper中的角色
+说起ZooKeeper的原理，首先要提到的就是ZK的三大角色，Leader，Learner，Client，其中learner又分为Follower和Observer，同时之所以存在这三大角色，都是为了ZK中的选举，听上去好似"民主"国家的政治一样，那zookeeper为什么需要选举，而选举中这三大角色的指责又是什么呢？且耐心往下看  
+- 选举  
+  说到底，ZooKeeper是一个为分布式系统服务的中间件，而ZooKeeper本身在实际部署中也是一个集群环境，或庞大或精简，但是都是面临一个多server多节点的状态，而这种状态必须要保持数据一致性，至少是对外的一致性，那么在这样一个环境中总得有个说了算的人，以及一大帮跟着混的人，而如何选出这个说了算的人就依赖于ZooKeeper本身的一致性算法Paxos，而这就是一个选举投票的算法，稍后我会着重说明下这个算法，在下觉得，这个算法确实挺复杂的，我也是晕了很久才逐渐明白。
+- Leader（领导者) zookeeper在运行过程中就像是一个紧密有序的组织，而Leader就是这个组织中负责发起投票和决议，以及最终更新系统状态的角色，同样Zookeeper也是一个节点无差别的系统，也即是说这个leader可以挂掉，也可以更换成其他节点来继任
+- Learner（学习者） 按大白话说就是广大的负责具体工作的劳动人民，比如码农，产品狗等等，在leader的领导下尊从系统运行规则，并且时刻准备着变成leader，而这个learner细分了两种角色
+  - Follower 接受client请求，并相应client请求，在选主的过程中要参与投票
+  - Observer 接受client的连接请求，并且向leader发送client的写请求，同步leader状态。与Follower最大的区别是，Observer并不参与投票，因为Observer的设计目的就是为了能够快速扩展系统从而提高读取的速度。
+- Client（客户端) 说白了就是zookeeper的消费者，正如其名，他们是最终zk的客户，就像之前在下写的那些demo，他们向zk发起请求满足自己无穷无尽的欲望。
+
+到此，你是不是已经对ZooKeeper的架构有了个大致的了解？俗话说一篇作文一幅图，总的来说ZooKeeper的逻辑如下图所示  
+![zk-arch](/image/posted/zookeeper/ZK-Arch.jpg)

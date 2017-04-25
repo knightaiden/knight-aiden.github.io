@@ -1,1 +1,1 @@
-#This is just my personal blog~
+## Aiden's blog.
