@@ -6,6 +6,9 @@ categories: Tech-Hadoop
 tags: hadoop, zookeeper, backend
 ---
 
+* content
+{:toc}
+
 上一篇博客大致介绍了下怎么在本地部署，这一篇文章，我会举一个最常见的栗子来说明下Zookeeper的实际用法，那就是分布式锁，也借这个topic大致介绍下Curator的用法，希望能帮助到你。
 
 

@@ -6,6 +6,9 @@ categories: Tech-Hadoop
 tags: hadoop, zookeeper, backend
 ---
 
+* content
+{:toc}
+
 之前的两篇文章已经大致的介绍来ZooKeeper从搭建开发环境到上手写代码的一些知识，相信读过之前的介绍，各位看官对ZooKeeper已经有了一定的认识，在下也在最近这几天会完善之前的文章，并且将代码做一定的更新，更全面的写一些demo以及应用场景来分享给各位，当然，如果有时间，也确实应该把英文版写了……毕竟是自己挖的坑。
 
 
