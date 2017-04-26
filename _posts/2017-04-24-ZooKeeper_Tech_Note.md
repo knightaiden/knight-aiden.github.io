@@ -13,6 +13,34 @@ tags: hadoop, zookeeper, backend
 
 
 
+## 基础知识
+### 数据模型
+- ZNode  
+  首先Zookeeper的最基本数据结构是ZNode，顾名思义，就是节点，zookeeper会从一个根节点树形向下延伸，非常类似Unix的文件目录结构，如果你尝试这跑了前几篇博客的Sample，你可能会在你之前配置的Data目录下看到这样的目录结构  
+  ![zk-file](/image/posted/zookeeper/zk-file.png)
+  就如标准的文件结构一样，zookeeper也提供了这样的树形目录结构，每个ZNode上可存储少量数据(默认是1M, 可修改配置, 但是并不不建议在ZNode上存储大量的数据)，除此之外，ZNode最重要的是储存acl信息，Acl见下文。另外如之前博客所讲，ZNode的节点分为如下两类
+  - Regular ZNode: 常规型ZNode, 用户需要显式的创建、删除
+  - Ephemeral ZNode: 临时型ZNode, 用户创建它之后，可以显式的删除，也可以在创建它的Session结束后，由ZooKeeper Server自动删除
+  另外加上zookeeper的Sequential特性（按编号递增创建)，就有了我们之前看到clientApi中的四种zookeeper节点创建方式
+
+- Acl  
+  既是Access Control的简称，这是一个在传统文件系统中就存在的概念，一般用来表示两个事情：所属组以及权限，自文件自上而下继承父目录。  
+  然而在zookeeper中Acl的概念是略有不同的，首先zk的Acl不存在任何继承关系，也就是每个ZNode的Acl彼此独立，其次Zookeeper的要表示三件事情：
+  1. scheme：Acl的管理方案，这是一个可扩展的概念，也可以使用zookeeper的省却配置
+    - world: 它下面只有一个id, 叫anyone, world:anyone代表任何人，zookeeper中对所有人有权限的结点就是属于world:anyone的
+    - auth: 它不需要id, 只要是通过authentication的user都有权限（zookeeper支持通过kerberos来进行authencation, 也支持username/password形式的authentication)
+digest: 它对应的id为username:BASE64(SHA1(password))，它需要先通过username:password形式的authentication
+    - ip: 它对应的id为客户机的IP地址，设置的时候可以设置一个ip段，比如ip:192.168.1.0/16, 表示匹配前16个bit的IP段
+    - super: 在这种scheme情况下，对应的id拥有超级权限，可以做任何事情(cdrwa)
+    - sasl: sasl的对应的id，是一个通过sasl authentication用户的id，zookeeper-3.4.4中的sasl authentication是通过kerberos来实现的，也就是说用户只有通过了kerberos认证，才能访问它有权限的node.
+  2. id：使用该scheme的用户id，可以是anyone
+  3. permissions：可以操作的权限
+    - CREATE(c): 创建权限，可以在在当前node下创建child node
+    - DELETE(d): 删除权限，可以删除当前的node
+    - READ(r): 读权限，可以获取当前node的数据，可以list当前node所有的child nodes
+    - WRITE(w): 写权限，可以向当前node写数据
+    - ADMIN(a): 管理权限，可以设置当前node的permission
+  > 尽管之前的sample这个参数很多时候都传入的是null，但是在实际项目中acl还是一个非常重要的应用。建议有时间详细读一下官方文档
 
 ### ZooKeeper中的角色
 说起ZooKeeper的原理，首先要提到的就是ZK的三大角色，Leader，Learner，Client，其中learner又分为Follower和Observer，同时之所以存在这三大角色，都是为了ZK中的选举，听上去好似"民主"国家的政治一样，那zookeeper为什么需要选举，而选举中这三大角色的指责又是什么呢？且耐心往下看  
@@ -23,6 +51,37 @@ tags: hadoop, zookeeper, backend
   - Follower 接受client请求，并相应client请求，在选主的过程中要参与投票
   - Observer 接受client的连接请求，并且向leader发送client的写请求，同步leader状态。与Follower最大的区别是，Observer并不参与投票，因为Observer的设计目的就是为了能够快速扩展系统从而提高读取的速度。
 - Client（客户端) 说白了就是zookeeper的消费者，正如其名，他们是最终zk的客户，就像之前在下写的那些demo，他们向zk发起请求满足自己无穷无尽的欲望。
-
-到此，你是不是已经对ZooKeeper的架构有了个大致的了解？俗话说一篇作文一幅图，总的来说ZooKeeper的逻辑如下图所示  
+总的来说ZooKeeper的逻辑如下图所示  
 ![zk-arch](/image/posted/zookeeper/ZK-Arch.jpg)
+
+## Zookeeper的工作原理
+### 原子广播
+  原子广播是zookeeper工作的核心机制，这个机制保证了各个server间的同步，名曰：ZAB协议。Zab协议又分为两种状态：
+  - 恢复模式（选主模式） 恢复模式是在leader挂掉之后，选出新的leader的过程，当新的leader产生，大多数server和leader同步之后，即退出恢复模式
+  - 广播模式 即各个follower向leader通讯的过程，稍后详细讲解。
+
+### 递增的事务id号（zxid）
+  所有的提议（proposal）都在被提出的时候加上了zxid。实现中zxid是一个64位的数字，它高32位是epoch用来标识leader关系是否改变，每次一个leader被选出来，它都会有一个新的epoch，标识当前属于那个leader的统治时期。低32位用于递增计数。  
+  每个Server在工作过程中有三种状态：
+  - LOOKING：当前Server不知道leader是谁，正在搜寻
+  - LEADING：当前Server即为选举出来的leader
+  - FOLLOWING：leader已经选举出来，当前Server与之同步
+
+### 同步流程
+  在leader存在的情况下，zookeeper主要的同步流程如下
+  1. leader等待server连接；
+  2. Follower连接leader，将最大的zxid发送给leader；
+  3. Leader根据follower的zxid确定同步点；
+  4. 完成同步后通知follower 已经成为uptodate状态；
+  5. Follower收到uptodate消息后，又可以重新接受client的请求进行服务了。
+
+### 选主流程
+zookeeper的选主流程主要基于一致性算法paxos实现的，分为两种basic paxos和fast paxos（默认)，首先先大致介绍下基于算法的zookeeper实现流程，未来我会抽出一篇博客的时间来专门讲解paxos的细节以及背后的故事与思想。
+
+## Zookeeper的运行流程
+
+### leader工作流程
+
+### follower工作流程
+
+## 总结
