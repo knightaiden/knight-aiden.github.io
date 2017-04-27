@@ -78,6 +78,22 @@ digest: 它对应的id为username:BASE64(SHA1(password))，它需要先通过use
 ### 选主流程
 zookeeper的选主流程主要基于一致性算法paxos实现的，分为两种basic paxos和fast paxos（默认)，首先先大致介绍下基于算法的zookeeper实现流程，未来我会抽出一篇博客的时间来专门讲解paxos的细节以及背后的故事与思想。
 
+## basic paxos
+	basic paxos机制作为Zookeeper对paxos算法最基本的实现，虽然没有被zk用作默认选主算法，但是却很明确的说明了paxos算法的核心意思，首先paxos是一种“民主的算法”，所以对于任意节点，都是有机会成为leader的，所以不管是basic paxos还是fast paxos算法，首先大家在第一轮都先选自己，然后对于basic paxos算法，每个server对集群内所有的server（包括他自己）发起一次询问：“你们选谁呢？！”，这个时候其他节点会把自己的结果反映给他，而这个节点会根据zxid判断是不是自己发的提案，只要不是自己的提案，都会把这个提案的（id,zxid）存在自己的投票表内进行收集，当投票结束后，会整理所有结果，将zxid最大的server作为自己认为的leader，这个时候再去检查投票列表中自己推选的leader是否有超过半数的其他server支持，如果有，那么该serve被推举为leader，更改server状态，如果没有半数以上的支持，那么继续回到之前的步骤，告知其他server自己选举的leader在询问其他server。  
+	听到这里不知道你是否能够看得明白，我觉得最好还是分成步骤再详细介绍一遍。
+	1. 第一轮投票，所有人都选自己
+	2. 发起提议，选我！
+	3. 询问其他server，并接收其他server的选主提案
+	4. 如果接收的是自己发起的提案，则直接丢弃/如果不是自己的发起的提案，获取对方的leader信息并存在自己的提案信息表中（id,zxid）。
+	5. 结束本轮投票后，统计投票表中的结果，将zxid最大的server作为自己新推举的leader。
+	6. 检查投票表中自己新推举的leader是否有超过半数的其他server也推举（假设2N+1个server，则需要大于等于N+1个server）。
+	7. 如果超过半数的server提起相同的leader议案，则该leader被选出，更改server状态/如果没有超过半数的server，则继续回到步骤3.直至leader产生。
+	到此我相信你已经对basic算法有了一个初步的了解。
+	
+## fast paxos
+	对于basic paxos算法，虽然最终能够选出server但是却面对两种问题，第一是速度不够快（总结为数学收敛，收敛速度较慢），第二就是所谓的“活锁问题”，简单来说就是一个“竞争”问题，假如提议者（Proposer）大于等于三，很难收到半数以上相同leader提案，这个时候就会不断的重复basic paxos中的步骤3.这时候就不是一个很好的状态了。  
+	
+
 ## Zookeeper的运行流程
 
 ### leader工作流程
