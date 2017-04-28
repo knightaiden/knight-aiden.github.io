@@ -3,7 +3,7 @@ layout: post
 title: 如何使用jekyll在github上构建自己的博客来分(zhuang)享(B)
 date: 2017-04-14 14:30
 categories: Tech-Frontend
-tags: blog, Front-end
+tags: blog Front-end
 ---
 
 * content

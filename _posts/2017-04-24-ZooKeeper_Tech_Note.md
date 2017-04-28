@@ -3,7 +3,7 @@ layout: post
 title: 上手Hadoop-Zookeeper技术内幕篇
 date: 2017-04-24 16:34
 categories: Tech-Hadoop
-tags: hadoop, zookeeper, backend
+tags: hadoop zookeeper backend
 ---
 
 * content
@@ -81,33 +81,33 @@ zookeeper的选主流程主要基于一致性算法paxos实现的，分为两种
 #### basic paxos
 basic paxos机制作为Zookeeper对paxos算法最基本的实现，虽然没有被zk用作默认选主算法，但是却很明确的说明了paxos算法的核心意思，首先paxos是一种“民主的算法”，所以对于任意节点，都是有机会成为leader的，所以不管是basic paxos还是fast paxos算法，首先大家在第一轮都先选自己，然后对于basic paxos算法，每个server对集群内所有的server（包括他自己）发起一次询问：“你们选谁呢？！”，这个时候其他节点会把自己的结果反映给他，而这个节点会根据zxid判断是不是自己发的提案，只要不是自己的提案，都会把这个提案的（id,zxid）存在自己的投票表内进行收集，当投票结束后，会整理所有结果，将zxid最大的server作为自己认为的leader，这个时候再去检查投票列表中自己推选的leader是否有超过半数的其他server支持，如果有，那么该serve被推举为leader，更改server状态，如果没有半数以上的支持，那么继续回到之前的步骤，告知其他server自己选举的leader在询问其他server。  
 听到这里不知道你是否能够看得明白，我觉得最好还是分成步骤再详细介绍一遍。
-  1. 第一轮投票，所有人都选自己
-	2. 发起提议，选我！
-	3. 询问其他server，并接收其他server的选主提案
-	4. 如果接收的是自己发起的提案，则直接丢弃/如果不是自己的发起的提案，获取对方的leader信息并存在自己的提案信息表中（id,zxid）。
-	5. 结束本轮投票后，统计投票表中的结果，将zxid最大的server作为自己新推举的leader。
-	6. 检查投票表中自己新推举的leader是否有超过半数的其他server也推举（假设2N+1个server，则需要大于等于N+1个server）。
-	7. 如果超过半数的server提起相同的leader议案，则该leader被选出，更改server状态/如果没有超过半数的server，则继续回到步骤3.直至leader产生。
+1. 第一轮投票，所有人都选自己
+2. 发起提议，选我！
+3. 询问其他server，并接收其他server的选主提案
+4. 如果接收的是自己发起的提案，则直接丢弃/如果不是自己的发起的提案，获取对方的leader信息并存在自己的提案信息表中（id,zxid）。
+5. 结束本轮投票后，统计投票表中的结果，将zxid最大的server作为自己新推举的leader。
+6. 检查投票表中自己新推举的leader是否有超过半数的其他server也推举（假设2N+1个server，则需要大于等于N+1个server）。
+7. 如果超过半数的server提起相同的leader议案，则该leader被选出，更改server状态/如果没有超过半数的server，则继续回到步骤3.直至leader产生。
 到此我相信你已经对basic算法有了一个初步的了解。
 
 #### fast paxos
 对于basic paxos算法，虽然最终能够选出server但是却面对两种问题，第一是速度不够快（总结为数学收敛，收敛速度较慢），第二就是所谓的“活锁问题”，简单来说就是一个“竞争”问题，假如提议者（Proposer）大于等于三，很难收到半数以上相同leader提案，这个时候就会不断的重复basic paxos中的步骤3.这时候就不是一个很好的状态了。  
 fast paxos算法，首先一个重要的概念是逻辑时钟，这个概念其实很大，为了便于理解，可以先理解为每次发起选举，server都会对这个逻辑时钟+1，意思就是逻辑时钟越大，选举的信息越新。fast paxos算法和basic paxos算法最核心的区别就在于接受消息的处理，具体流程如下：
-	1. 准备发起投票，更新逻辑时钟+1
-	2. 发起提议，选自己
-	3. 询问其他server，并接收其他server的选主提案
-	4. 依次判断接受消息中的逻辑时钟（Epoch）->zxid->serverId，只要满足大于当前推举leader的值就推举这个较大的为leader
-	5. 发送新推举leader的信息
-	6. 如果自己推举的leader超过半数（同basic），则确定该server为leader,更改server状态。
+1. 准备发起投票，更新逻辑时钟+1
+2. 发起提议，选自己
+3. 询问其他server，并接收其他server的选主提案
+4. 依次判断接受消息中的逻辑时钟（Epoch）->zxid->serverId，只要满足大于当前推举leader的值就推举这个较大的为leader
+5. 发送新推举leader的信息
+6. 如果自己推举的leader超过半数（同basic），则确定该server为leader,更改server状态。
 便是fast paxos算法中的流程
 
 #### 同步流程
 当选主流程完成后就进入了同步流程，这个相对简单很多  
-  1. leader等待server连接；
-  2. Follower连接leader，将最大的zxid发送给leader；
-  3. Leader根据follower的zxid确定同步点；
-  4. 完成同步后通知follower 已经成为uptodate状态；
-  5. Follower收到uptodate消息后，又可以重新接受client的请求进行服务了。
+1. leader等待server连接；
+2. Follower连接leader，将最大的zxid发送给leader；
+3. Leader根据follower的zxid确定同步点；
+4. 完成同步后通知follower 已经成为uptodate状态；
+5. Follower收到uptodate消息后，又可以重新接受client的请求进行服务了。
 
 
 ## Zookeeper的运行流程

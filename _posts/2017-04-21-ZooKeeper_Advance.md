@@ -3,7 +3,7 @@ layout: post
 title: 上手Hadoop-Zookeeper实战篇
 date: 2017-04-22 22:00
 categories: Tech-Hadoop
-tags: hadoop, zookeeper, backend
+tags: hadoop zookeeper backend
 ---
 
 * content

@@ -3,7 +3,7 @@ layout: post
 title: 上手Hadoop-Zookeeper入门篇
 date: 2017-04-18 17:00
 categories: Tech-Hadoop
-tags: hadoop, zookeeper, backend
+tags: hadoop zookeeper backend
 ---
 
 > 最近由于公司项目需要使用Hadoop相关的内容，于是作为一个后台的Java开发人员，决定开一个Hadoop的坑，说起来还真是个有趣的设定。。。  
