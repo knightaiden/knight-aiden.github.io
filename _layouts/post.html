@@ -65,9 +65,9 @@ layout: default
         {% include previousAndNext.html %}
 
         <h2 id="comments">Comments</h2>
-        <div id="uyan_frame"></div>
-        <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2131926"></script>
-
+        {% if site.intensedebate_comments %}
+          {% include intensedebate-comments.html %}
+        {% endif %}
 <script>
 /**
  * target _blank
